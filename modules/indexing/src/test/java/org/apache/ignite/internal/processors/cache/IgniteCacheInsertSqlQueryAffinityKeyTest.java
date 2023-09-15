@@ -87,6 +87,7 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
 
     Set<String> keys = U.newLinkedHashSet(2);
     keys.add("id");
+    keys.add("city"); // TODO: Проверить распределение без указания поля
 
     QueryEntity qryEntity = new QueryEntity(KEY_TYPE, VAL_TYPE);
     fillTestEntityFields(qryEntity.setTableName(tblName).setKeyFields(keys));
@@ -106,7 +107,7 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
 
     executeSql(
             "insert into " + tblName + " (ID, NAME, COMPANY, CITY, AGE) values(?, ?, ?, ?, ?)",
-            1L, "TestName", "TestCompany", "Moscow", 35
+            1L, "TestName", "TestCompany", "Moscow", 35 // TODO: проверить что в той партиции
     );
 
     List<List<?>> rs = executeSql("select * from " + tblName);
@@ -180,9 +181,9 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
 
     List<List<?>> rs = executeSql("select * from " + tblName);
     assertEquals(2, rs.size());
-  }*/
+  }
 
-  /*@Test
+  @Test
   public void testInsertWithClassDefined() {
     String tblName = createTableName("TEST_VALUE");
 
@@ -252,9 +253,6 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
     return builder.build();
   }
 
-  /**
-     *
-     */
   static class TestKey {
     /** */
     @QuerySqlField
@@ -286,9 +284,6 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
     }
   }
 
-  /**
-   *
-   */
   static class TestValue {
     /** */
     @QuerySqlField()
