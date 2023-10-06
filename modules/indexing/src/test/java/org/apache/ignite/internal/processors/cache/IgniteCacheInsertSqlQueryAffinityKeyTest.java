@@ -194,6 +194,7 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
 
     Set<String> keys = U.newLinkedHashSet(2);
     keys.add("id");
+    keys.add("city");
 
     QueryEntity qryEntity = new QueryEntity(TestKey.class.getName(), TestValue.class.getName());
     fillTestEntityFields(qryEntity.setTableName(tblName).setKeyFields(keys));
