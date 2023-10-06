@@ -10,7 +10,6 @@ import org.apache.ignite.cache.affinity.rendezvous.RendezvousAffinityFunction;
 import org.apache.ignite.cache.query.SqlFieldsQuery;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.internal.IgniteEx;
-import org.apache.ignite.internal.binary.builder.BinaryObjectBuilderImpl;
 import org.apache.ignite.internal.processors.datastreamer.DataStreamerCacheUpdaters;
 import org.apache.ignite.internal.util.typedef.F;
 import org.apache.ignite.internal.util.typedef.internal.U;
@@ -53,23 +52,34 @@ public class IgniteCacheInsertSqlQueryComplexKeyTest extends GridCommonAbstractT
    * Run SQL statement on default node.
    *
    * @param stmt Statement to run.
-   * @param args arguments of statements
+   * @param args Arguments of statements
    * @return Run result.
    */
   private List<List<?>> executeSql(String stmt, Object... args) {
     return executeSql(node(), stmt, null, args);
   }
 
+  /**
+   * Run SQL statement on default node and specified partition.
+   * Partition may be null.
+   *
+   * @param stmt Statement to run.
+   * @param part Partition number.
+   * @param args Arguments of statements
+   * @return Run result.
+   */
   private List<List<?>> executeSql(String stmt, Integer part, Object... args) {
     return executeSql(node(), stmt, part, args);
   }
 
   /**
-   * Run SQL statement on specified node.
+   * Run SQL statement on specified node and specified partition.
+   * Partition may be null.
    *
    * @param node node to execute query.
    * @param stmt Statement to run.
-   * @param args arguments of statements
+   * @param part Partition number.
+   * @param args Arguments of statements
    * @return Run result.
    */
   private List<List<?>> executeSql(IgniteEx node, String stmt, Integer part, Object... args) {
@@ -80,6 +90,7 @@ public class IgniteCacheInsertSqlQueryComplexKeyTest extends GridCommonAbstractT
 
     return node.context().query().querySqlFields(q, true).getAll();
   }
+
   private QueryEntity fillTestEntityFields(QueryEntity qryEntity) {
     return qryEntity.addQueryField("id", Long.class.getName(), null)
             .addQueryField("name", String.class.getName(), null)
@@ -164,7 +175,7 @@ public class IgniteCacheInsertSqlQueryComplexKeyTest extends GridCommonAbstractT
   }
 
   private BinaryObject buildKeyStrictly(String affKey) {
-    BinaryObjectBuilderImpl builder = (BinaryObjectBuilderImpl) node().binary().builder(KEY_TYPE);
+    BinaryObjectBuilder builder = node().binary().builder(KEY_TYPE);
     builder.affinityFieldName("CITY");
     builder.setField("ID", 1L,  Long.class);
     builder.setField("CITY", affKey, String.class);
