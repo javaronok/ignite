@@ -86,7 +86,7 @@ public interface BinaryObjectBuilder {
      * @param name Field name.
      * @return Field value.
      */
-    public <T> T getField(String name);
+    <T> T getField(String name);
 
     /**
      * Sets field value.
@@ -96,7 +96,7 @@ public interface BinaryObjectBuilder {
      * @return {@code this} for chaining.
      * @see BinaryObject#type()
      */
-    public BinaryObjectBuilder setField(String name, Object val);
+    BinaryObjectBuilder setField(String name, Object val);
 
     /**
      * Sets field value with value type specification.
@@ -110,7 +110,7 @@ public interface BinaryObjectBuilder {
      * @return {@code this} for chaining.
      * @see BinaryObject#type()
      */
-    public <T> BinaryObjectBuilder setField(String name, @Nullable T val, Class<? super T> type);
+    <T> BinaryObjectBuilder setField(String name, @Nullable T val, Class<? super T> type);
 
     /**
      * Sets field value.
@@ -121,7 +121,7 @@ public interface BinaryObjectBuilder {
      * @param builder Builder for object field.
      * @return {@code this} for chaining.
      */
-    public BinaryObjectBuilder setField(String name, @Nullable BinaryObjectBuilder builder);
+    BinaryObjectBuilder setField(String name, @Nullable BinaryObjectBuilder builder);
 
     /**
      * Removes field from this builder.
@@ -129,7 +129,7 @@ public interface BinaryObjectBuilder {
      * @param fieldName Field name.
      * @return {@code this} instance for chaining.
      */
-    public BinaryObjectBuilder removeField(String fieldName);
+    BinaryObjectBuilder removeField(String fieldName);
 
     /**
      * Builds binary object.
@@ -138,4 +138,11 @@ public interface BinaryObjectBuilder {
      * @throws BinaryObjectException In case of error.
      */
     public BinaryObject build() throws BinaryObjectException;
+
+    /**
+     * Set known affinity key field name.
+     *
+     * @param affFieldName Affinity key field name.
+     */
+    void affinityFieldName(String affFieldName);
 }

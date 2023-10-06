@@ -35,6 +35,7 @@ import org.apache.ignite.internal.processors.cache.persistence.wal.SegmentEofExc
 import org.apache.ignite.internal.processors.cache.persistence.wal.WALPointer;
 import org.apache.ignite.internal.processors.cache.persistence.wal.WalSegmentTailReachedException;
 import org.apache.ignite.internal.processors.cache.persistence.wal.crc.FastCrc;
+import org.apache.ignite.internal.processors.cache.persistence.wal.crc.IgniteDataIntegrityViolationException;
 import org.apache.ignite.internal.processors.cache.persistence.wal.io.FileInput;
 import org.apache.ignite.internal.processors.cache.persistence.wal.io.SegmentFileInputFactory;
 import org.apache.ignite.internal.processors.cache.persistence.wal.io.SegmentIO;
@@ -48,6 +49,7 @@ import org.apache.ignite.internal.util.typedef.internal.U;
 import org.apache.ignite.lang.IgniteBiPredicate;
 
 import static org.apache.ignite.IgniteSystemProperties.IGNITE_PDS_SKIP_CRC;
+import static org.apache.ignite.IgniteSystemProperties.IGNITE_PDS_SKIP_FAILED_CRC;
 import static org.apache.ignite.internal.pagemem.wal.record.WALRecord.RecordType.SWITCH_SEGMENT_RECORD;
 
 /**
@@ -76,6 +78,9 @@ public class RecordV1Serializer implements RecordSerializer {
 
     /** Skip CRC calculation/check flag */
     public static boolean skipCrc = IgniteSystemProperties.getBoolean(IGNITE_PDS_SKIP_CRC, false);
+
+    /** Skip failed CRC. */
+    public static boolean skipFailedCrc = IgniteSystemProperties.getBoolean(IGNITE_PDS_SKIP_FAILED_CRC, false);
 
     /** V1 data serializer. */
     private final RecordDataV1Serializer dataSerializer;
@@ -367,11 +372,11 @@ public class RecordV1Serializer implements RecordSerializer {
         RecordIO reader
     ) throws EOFException, IgniteCheckedException {
         long startPos = -1;
-
+        WALRecord res = null;
         try (SimpleFileInput.Crc32CheckingFileInput in = in0.startRead(skipCrc)) {
             startPos = in0.position();
 
-            WALRecord res = reader.readWithHeaders(in, expPtr);
+            res = reader.readWithHeaders(in, expPtr);
 
             assert res != null;
 
@@ -383,6 +388,12 @@ public class RecordV1Serializer implements RecordSerializer {
             throw e;
         }
         catch (Exception e) {
+
+            if (skipFailedCrc && e instanceof IgniteDataIntegrityViolationException 
+                    && res != null && res.type() == null) {
+                return res;
+            }
+
             long size = -1;
 
             try {

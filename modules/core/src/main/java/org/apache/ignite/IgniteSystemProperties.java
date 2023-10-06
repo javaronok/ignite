@@ -1113,6 +1113,12 @@ public final class IgniteSystemProperties {
     public static final String IGNITE_PDS_SKIP_CRC = "IGNITE_PDS_SKIP_CRC";
 
     /**
+     * Skip failed CRC.
+     */
+    @SystemProperty("Skip failed CRC")
+    public static final String IGNITE_PDS_SKIP_FAILED_CRC = "IGNITE_PDS_SKIP_FAILED_CRC";
+
+    /**
      * WAL rebalance threshold.
      */
     @Deprecated

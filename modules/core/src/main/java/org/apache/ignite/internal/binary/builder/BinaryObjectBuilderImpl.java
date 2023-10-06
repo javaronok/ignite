@@ -648,7 +648,7 @@ public class BinaryObjectBuilderImpl implements BinaryObjectBuilder {
      *
      * @param affFieldName Affinity key field name.
      */
-    public void affinityFieldName(String affFieldName) {
+    @Override  public void affinityFieldName(String affFieldName) {
         this.affFieldName = affFieldName;
     }
 }
