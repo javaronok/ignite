@@ -1,7 +1,7 @@
 package org.apache.ignite.internal.processors.cache;
 
 import org.apache.ignite.IgniteCache;
-import org.apache.ignite.IgniteDataStreamer;
+import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.binary.BinaryObjectBuilder;
 import org.apache.ignite.cache.CacheKeyConfiguration;
@@ -10,14 +10,18 @@ import org.apache.ignite.cache.affinity.rendezvous.RendezvousAffinityFunction;
 import org.apache.ignite.cache.query.SqlFieldsQuery;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.internal.IgniteEx;
-import org.apache.ignite.internal.processors.datastreamer.DataStreamerCacheUpdaters;
 import org.apache.ignite.internal.util.typedef.F;
-import org.apache.ignite.internal.util.typedef.internal.U;
 import org.apache.ignite.testframework.junits.common.GridCommonAbstractTest;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import static org.apache.ignite.testframework.GridTestUtils.assertThrowsWithCause;
 
 public class IgniteCacheInsertSqlQueryComplexKeyTest extends GridCommonAbstractTest {
 
@@ -99,16 +103,14 @@ public class IgniteCacheInsertSqlQueryComplexKeyTest extends GridCommonAbstractT
             .addQueryField("city", String.class.getName(), null);
   }
 
-  private IgniteCache<BinaryObject, BinaryObject> configureCache(String tblName) {
+  private IgniteCache<BinaryObject, BinaryObject> configureCache(String tblName, Collection<String> keyFields) {
     CacheConfiguration<BinaryObject, BinaryObject>ccfg = new CacheConfiguration<>(DEFAULT_CACHE_NAME);
 
     ccfg.setSqlSchema("PUBLIC");
     ccfg.setName(tblName);
     ccfg.setAffinity(new RendezvousAffinityFunction(false,1024));
 
-    Set<String> keys = U.newLinkedHashSet(2);
-    keys.add("id");
-    keys.add("city");
+    Set<String> keys = new LinkedHashSet<>(keyFields);
 
     QueryEntity qryEntity = new QueryEntity(KEY_TYPE, VAL_TYPE);
     fillTestEntityFields(qryEntity.setTableName(tblName).setKeyFields(keys));
@@ -121,10 +123,28 @@ public class IgniteCacheInsertSqlQueryComplexKeyTest extends GridCommonAbstractT
   }
 
   @Test
+  public void testCreateCacheWithKeyTruncated() {
+    String tblName = createTableName("TEST_VALUE");
+    assertThrowsWithCause(
+            () -> configureCache(tblName, Collections.singletonList("id")),
+            IgniteCheckedException.class
+    );
+  }
+
+  private String getTableAffinityKeyField(String tblName) {
+    String sql = "select AFFINITY_KEY_COLUMN from SYS.TABLES where TABLE_NAME = '" + tblName + "'";
+    List<List<?>> tableMeta = executeSql(sql);
+    return !tableMeta.isEmpty() ? (String) tableMeta.get(0).get(0) : null;
+  }
+
+  @Test
   public void testInsertWithComplexKey() {
     String tblName = createTableName("TEST_VALUE");
 
-    configureCache(tblName);
+    configureCache(tblName, Arrays.asList("id", "city"));
+
+    String affKeyField = getTableAffinityKeyField(tblName);
+    assertEquals("CITY", affKeyField);
 
     String affKey = "Moscow";
 
@@ -143,17 +163,16 @@ public class IgniteCacheInsertSqlQueryComplexKeyTest extends GridCommonAbstractT
   public void testStreamWithComplexKeyStrictly() {
     String tblName = createTableName("TEST_VALUE");
 
-    IgniteCache<BinaryObject, BinaryObject> cache = configureCache(tblName);
+    IgniteCache<BinaryObject, BinaryObject> cache = configureCache(tblName, Arrays.asList("id", "city"));
+
+    String affKeyField = getTableAffinityKeyField(tblName);
+    assertEquals("CITY", affKeyField);
 
     String affKey = "Moscow";
 
-    try (IgniteDataStreamer<BinaryObject, BinaryObject> streamer = createDataStreamer(node(), cache.getName())) {
-      BinaryObject key = buildKeyStrictly(affKey);
-      BinaryObject val = buildVal();
-
-      streamer.addData(key, val);
-      streamer.flush();
-    }
+    BinaryObject key = buildKeyStrictly(affKey);
+    BinaryObject val = buildVal();
+    cache.put(key, val);
 
     executeSql(
             "insert into " + tblName + " (ID, NAME, COMPANY, CITY, AGE) values(?, ?, ?, ?, ?)",
@@ -164,14 +183,6 @@ public class IgniteCacheInsertSqlQueryComplexKeyTest extends GridCommonAbstractT
 
     List<List<?>> rs = executeSql("select * from " + tblName, part);
     assertEquals(2, rs.size());
-  }
-
-  private IgniteDataStreamer<BinaryObject, BinaryObject> createDataStreamer(IgniteEx ignite, String cacheName) {
-    IgniteDataStreamer<BinaryObject, BinaryObject> streamer = ignite.dataStreamer(cacheName);
-    streamer.keepBinary(true);
-    streamer.allowOverwrite(true);
-    streamer.receiver(DataStreamerCacheUpdaters.batched());
-    return streamer;
   }
 
   private BinaryObject buildKeyStrictly(String affKey) {

@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ import javax.cache.expiry.EternalExpiryPolicy;
 import javax.cache.expiry.ExpiryPolicy;
 import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.IgniteLogger;
+import org.apache.ignite.cache.CacheKeyConfiguration;
 import org.apache.ignite.cache.CacheRebalanceMode;
 import org.apache.ignite.cache.QueryEntity;
 import org.apache.ignite.cache.affinity.rendezvous.RendezvousAffinityFunction;
@@ -464,6 +466,26 @@ public class ValidationOnNodeJoinUtils {
         }
 
         Collection<QueryEntity> ents = cc.getQueryEntities();
+        CacheKeyConfiguration[] cacheKeyCfgs = cc.getKeyConfiguration();
+        if (ents != null && !ents.isEmpty() && cacheKeyCfgs != null) {
+            for (CacheKeyConfiguration cacheKeyCfg : cacheKeyCfgs) {
+                String type = cacheKeyCfg.getTypeName();
+                String affKey = cacheKeyCfg.getAffinityKeyFieldName();
+
+                QueryEntity qType = ents.stream()
+                        .filter(t -> type.equals(t.getKeyType()))
+                        .findAny()
+                        .orElse(null);
+
+                if (qType != null) {
+                    Set<String> keys = qType.getKeyFields();
+                    if (keys != null && !keys.contains(affKey))
+                        throw new IgniteCheckedException("Affinity key field [keyField='" + affKey +
+                                "'] must be included in entity key set [keys=[" + String.join(",", keys) +
+                                "], typeMame='" + type + "', cacheName='" + U.maskName(cc.getName()) + "']");
+                }
+            }
+        }
 
         if (ctx.discovery().discoCache() != null) {
             boolean nonDfltPrecScaleExists = ents.stream().anyMatch(
