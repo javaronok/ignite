@@ -2287,6 +2287,8 @@ public class GridQueryProcessor extends GridProcessorAdapter {
 
                     if (idx != null)
                         idx.registerType(cacheInfo, desc, isSql);
+
+                    // TODO: Зарегистировать метатип
                 }
 
                 cacheNames.add(CU.mask(cacheName));
