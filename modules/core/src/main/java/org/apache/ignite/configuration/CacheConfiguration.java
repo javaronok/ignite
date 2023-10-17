@@ -218,6 +218,9 @@ public class CacheConfiguration<K, V> extends MutableConfiguration<K, V> {
     /** Default disk page compression algorithm. */
     public static final DiskPageCompression DFLT_DISK_PAGE_COMPRESSION = DiskPageCompression.DISABLED;
 
+    /** Create binary metadata on create cache. */
+    public static final boolean DFLT_CREATE_META_ON_START = false;
+
     /** Cache name. */
     private String name;
 
@@ -436,6 +439,9 @@ public class CacheConfiguration<K, V> extends MutableConfiguration<K, V> {
     /** */
     private Integer diskPageCompressionLevel;
 
+    /** Create binary meta on create cache immediately. */
+    private boolean createMetaOnStart = DFLT_CREATE_META_ON_START;
+
     /** Empty constructor (all values are initialized to their defaults). */
     public CacheConfiguration() {
         /* No-op. */
@@ -535,6 +541,7 @@ public class CacheConfiguration<K, V> extends MutableConfiguration<K, V> {
         sqlOnheapCache = cc.isSqlOnheapCacheEnabled();
         sqlOnheapCacheMaxSize = cc.getSqlOnheapCacheMaxSize();
         evtsDisabled = cc.isEventsDisabled();
+        createMetaOnStart = cc.isCreateMetaOnStart();
     }
 
     /**
@@ -2476,6 +2483,29 @@ public class CacheConfiguration<K, V> extends MutableConfiguration<K, V> {
      */
     public CacheConfiguration<K, V> setDiskPageCompressionLevel(Integer diskPageCompressionLevel) {
         this.diskPageCompressionLevel = diskPageCompressionLevel;
+
+        return this;
+    }
+
+    /**
+     * By deafault metadata creates on first binary put to cache.
+     * If flag are turned on True metadata registered on cache start after table build.
+     *
+     * @return Create mets flag.
+     */
+    public boolean isCreateMetaOnStart() {
+        return createMetaOnStart;
+    }
+
+    /**
+     * Sets metadata create flag.
+     *
+     * @param createMetaOnStart Copy on get flag.
+     * @see #isCreateMetaOnStart
+     * @return {@code this} for chaining.
+     */
+    public CacheConfiguration<K, V> setCreateMetaOnStart(boolean createMetaOnStart) {
+        this.createMetaOnStart = createMetaOnStart;
 
         return this;
     }

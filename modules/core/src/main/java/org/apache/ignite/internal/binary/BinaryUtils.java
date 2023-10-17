@@ -1020,12 +1020,8 @@ public class BinaryUtils {
             }
 
             // Check and merge fields.
-            Map<String, BinaryFieldMetadata> mergedFields;
-
-            if (FIELDS_SORTED_ORDER)
-                mergedFields = new TreeMap<>(oldMeta.fieldsMap());
-            else
-                mergedFields = new LinkedHashMap<>(oldMeta.fieldsMap());
+            Map<String, BinaryFieldMetadata> mergedFields = createMetaFieldsMap();
+            mergedFields.putAll(oldMeta.fieldsMap());
 
             Map<String, BinaryFieldMetadata> newFields = newMeta.fieldsMap();
 
@@ -2632,6 +2628,10 @@ public class BinaryUtils {
     /** */
     public static boolean isObjectArray(Class<?> cls) {
         return Object[].class == cls || BinaryArray.class == cls || BinaryEnumArray.class == cls;
+    }
+
+    public static <K,V> Map<K,V> createMetaFieldsMap() {
+        return FIELDS_SORTED_ORDER ? new TreeMap<>() : new LinkedHashMap<>();
     }
 
     /**

@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.cache.Cache;
 import javax.cache.CacheException;
 import org.apache.ignite.IgniteCheckedException;
@@ -64,7 +65,10 @@ import org.apache.ignite.internal.GridComponent;
 import org.apache.ignite.internal.GridKernalContext;
 import org.apache.ignite.internal.IgniteInternalFuture;
 import org.apache.ignite.internal.NodeStoppingException;
+import org.apache.ignite.internal.binary.BinaryContext;
+import org.apache.ignite.internal.binary.BinaryFieldMetadata;
 import org.apache.ignite.internal.binary.BinaryMetadata;
+import org.apache.ignite.internal.binary.BinaryUtils;
 import org.apache.ignite.internal.cache.query.index.IndexProcessor;
 import org.apache.ignite.internal.cache.query.index.IndexQueryProcessor;
 import org.apache.ignite.internal.cache.query.index.IndexQueryResult;
@@ -155,6 +159,7 @@ import static org.apache.ignite.cache.CacheMode.PARTITIONED;
 import static org.apache.ignite.events.EventType.EVT_CACHE_QUERY_EXECUTED;
 import static org.apache.ignite.internal.GridTopic.TOPIC_SCHEMA;
 import static org.apache.ignite.internal.IgniteComponentType.INDEXING;
+import static org.apache.ignite.internal.MarshallerPlatformIds.JAVA_ID;
 import static org.apache.ignite.internal.binary.BinaryUtils.fieldTypeName;
 import static org.apache.ignite.internal.binary.BinaryUtils.typeByClass;
 import static org.apache.ignite.internal.managers.communication.GridIoPolicy.SCHEMA_POOL;
@@ -1299,7 +1304,7 @@ public class GridQueryProcessor extends GridProcessorAdapter {
             Collection<QueryEntity> qryEntities = schema.entities();
 
             if (!F.isEmpty(qryEntities)) {
-                boolean binaryEnabled = ctx.cacheObjects().isBinaryEnabled(ccfg);
+                boolean binaryEnabled = ctx.cacheObjects().isBinaryEnabled(ccfg) && !ccfg.isCreateMetaOnStart();
 
                 if (binaryEnabled) {
                     for (QueryEntity qryEntity : qryEntities) {
@@ -1308,6 +1313,68 @@ public class GridQueryProcessor extends GridProcessorAdapter {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Register key type and value type from descriptor
+     *
+     * @param desc - Descriptor of type
+     */
+    private void registerBinaryType(QueryTypeDescriptorImpl desc) {
+        IgniteCacheObjectProcessor cacheObjProc = ctx.cacheObjects();
+        if (cacheObjProc instanceof CacheObjectBinaryProcessorImpl) {
+            CacheObjectBinaryProcessorImpl binProc = (CacheObjectBinaryProcessorImpl) cacheObjProc;
+            BinaryContext binCtx = binProc.binaryContext();
+            String keyTypeName = desc.keyTypeName();
+            String valTypeName = desc.valueTypeName();
+
+            if (keyTypeName != null) {
+                Map<String, GridQueryProperty> keyFields = desc.properties().entrySet().stream()
+                        .filter(e -> e.getValue().key())
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
+                registerBinaryQueryDescriptorType(binCtx, keyTypeName, desc.affinityKey(), keyFields);
+            }
+
+            if (valTypeName != null) {
+                Map<String, GridQueryProperty> valFields = desc.properties().entrySet().stream()
+                        .filter(e -> !e.getValue().key())
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
+                registerBinaryQueryDescriptorType(binCtx, valTypeName, null, valFields);
+            }
+        }
+    }
+
+    /**
+     * Register binary type in binary context
+     *
+     * @param binCtx - binary context
+     * @param typeName - name of type
+     * @param affinityKeyField - affinity field name from key
+     * @param props - properties of type
+     */
+    private void registerBinaryQueryDescriptorType(BinaryContext binCtx, String typeName, String affinityKeyField,
+                                                   Map<String, GridQueryProperty> props
+    ) {
+        int typeId = binCtx.typeId(typeName);
+        boolean registered = binCtx.registerUserClassName(typeId, typeName, false, false, JAVA_ID);
+
+        if (registered) {
+            Map<String, BinaryFieldMetadata> fieldsMeta = props.entrySet().stream()
+                    .collect(
+                            Collectors.toMap(Map.Entry::getKey, e -> {
+                                        GridQueryProperty p = e.getValue();
+                                        int fieldType = BinaryUtils.typeByClass(p.type());
+                                        int fieldId = binCtx.fieldId(typeId, p.name());
+                                        return new BinaryFieldMetadata(fieldType, fieldId);
+                                    },
+                                    (a, b) -> a,
+                                    BinaryUtils::createMetaFieldsMap
+                            )
+                    );
+
+            BinaryMetadata meta = new BinaryMetadata(typeId, typeName, fieldsMeta, affinityKeyField, null, false, null);
+            binCtx.updateMetadata(typeId, meta, false);
         }
     }
 
@@ -2288,7 +2355,10 @@ public class GridQueryProcessor extends GridProcessorAdapter {
                     if (idx != null)
                         idx.registerType(cacheInfo, desc, isSql);
 
-                    // TODO: Зарегистировать метатип
+                    CacheConfiguration<?,?> ccfg = cacheInfo.config();
+                    if (ccfg.isCreateMetaOnStart()) {
+                        registerBinaryType(desc);
+                    }
                 }
 
                 cacheNames.add(CU.mask(cacheName));

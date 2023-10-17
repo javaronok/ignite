@@ -4,6 +4,7 @@ import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.binary.BinaryObjectBuilder;
+import org.apache.ignite.binary.BinaryObjectException;
 import org.apache.ignite.cache.CacheKeyConfiguration;
 import org.apache.ignite.cache.QueryEntity;
 import org.apache.ignite.cache.affinity.rendezvous.RendezvousAffinityFunction;
@@ -36,9 +37,14 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
   /** Counter to generate unique table names. */
   private static int tblCnt = 0;
 
-  private static String KEY_TYPE = "TestKey", VAL_TYPE = "TestValue";
+  /** Counter to generate unique type names. */
+  private static int typeCnt = 0;
 
-  protected static final String DEFAULT_TMPL_NAME = "TMPL_CFG_1";
+  private static final String KEY_TYPE = "TestKey", VAL_TYPE = "TestValue";
+
+  private static final String TBL_NAME = "TEST_VALUE";
+
+  private static final String DEFAULT_TMPL_NAME = "TMPL_CFG_1";
 
   /** {@inheritDoc} */
   @Override protected void beforeTestsStarted() throws Exception {
@@ -56,6 +62,10 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
 
   private String createTableName(String prefix) {
     return prefix + "_" + tblCnt++;
+  }
+
+  private String createTypeName(String prefix) {
+    return prefix + typeCnt++;
   }
 
   private IgniteEx node() {
@@ -85,14 +95,18 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
     return node.context().query().querySqlFields(new SqlFieldsQuery(stmt).setArgs(args), true).getAll();
   }
   private QueryEntity fillTestEntityFields(QueryEntity qryEntity) {
-    return qryEntity.addQueryField("id", Long.class.getName(), null)
-            .addQueryField("name", String.class.getName(), null)
-            .addQueryField("age", Integer.class.getName(), null)
-            .addQueryField("company", String.class.getName(), null)
-            .addQueryField("city", String.class.getName(), null);
+    return qryEntity.addQueryField("ID", Long.class.getName(), null)
+            .addQueryField("NAME", String.class.getName(), null)
+            .addQueryField("AGE", Integer.class.getName(), null)
+            .addQueryField("COMPANY", String.class.getName(), null)
+            .addQueryField("CITY", String.class.getName(), null);
   }
 
-  private IgniteCache<BinaryObject, BinaryObject> configureCache(String tblName, Collection<String> keyFields) {
+  private IgniteCache<BinaryObject, BinaryObject> configureCache(String tblName,
+                                                                 String keyType, String valueType,
+                                                                 Collection<String> keyFields,
+                                                                 boolean createMetaOnStart
+  ) {
     CacheConfiguration<BinaryObject, BinaryObject>ccfg = new CacheConfiguration<>(DEFAULT_CACHE_NAME);
 
     ccfg.setSqlSchema("PUBLIC");
@@ -100,11 +114,13 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
 
     Set<String> keys = new LinkedHashSet<>(keyFields);
 
-    QueryEntity qryEntity = new QueryEntity(KEY_TYPE, VAL_TYPE);
+    QueryEntity qryEntity = new QueryEntity(keyType, valueType);
     fillTestEntityFields(qryEntity.setTableName(tblName).setKeyFields(keys));
 
     ccfg.setQueryEntities(F.asList(qryEntity));
-    ccfg.setKeyConfiguration(new CacheKeyConfiguration(KEY_TYPE, "city"));
+    ccfg.setKeyConfiguration(new CacheKeyConfiguration(keyType, "CITY"));
+
+    ccfg.setCreateMetaOnStart(createMetaOnStart);
 
     IgniteEx ignite = node();
     return ignite.createCache(ccfg);
@@ -118,18 +134,23 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
 
   //@Test
   public void testCreateCacheWithKeyTruncated() {
-    String tblName = createTableName("TEST_VALUE");
+    String tblName = createTableName(TBL_NAME);
+    String keyType = createTypeName(KEY_TYPE);
+    String valType = createTypeName(VAL_TYPE);
+
     assertThrowsWithCause(
-            () -> configureCache(tblName, Collections.singletonList("id")),
+            () -> configureCache(tblName, keyType, valType, Collections.singletonList("id"), false),
             IgniteCheckedException.class
     );
   }
 
   @Test
   public void testInsertWithComplexKey() {
-    String tblName = createTableName("TEST_VALUE");
+    String tblName = createTableName(TBL_NAME);
+    String keyType = createTypeName(KEY_TYPE);
+    String valType = createTypeName(VAL_TYPE);
 
-    configureCache(tblName, Arrays.asList("id", "city"));
+    configureCache(tblName, keyType, valType, Arrays.asList("ID", "CITY"), true);
 
     String affKeyField = getTableAffinityKeyField(tblName);
     assertEquals("CITY", affKeyField);
@@ -145,15 +166,17 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
 
   @Test
   public void testPutWithComplexKeyStrictly() {
-    String tblName0 = createTableName("TEST_VALUE");
+    String tblName0 = createTableName(TBL_NAME);
+    String keyType = createTypeName(KEY_TYPE);
+    String valType = createTypeName(VAL_TYPE);
 
-    IgniteCache<BinaryObject, BinaryObject> cache0 = configureCache(tblName0, Arrays.asList("id", "city"));
+    IgniteCache<BinaryObject, BinaryObject> cache0 = configureCache(tblName0, keyType, valType, Arrays.asList("ID", "CITY"), true);
 
     String affKeyField = getTableAffinityKeyField(tblName0);
     assertEquals("CITY", affKeyField);
 
-    BinaryObject key = buildKeyStrictly(1L);
-    BinaryObject val = buildVal();
+    BinaryObject key = buildKeyStrictly(keyType, 1L);
+    BinaryObject val = buildVal(valType);
 
     cache0.put(key, val);
 
@@ -164,42 +187,21 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
 
     List<List<?>> rs = executeSql("select * from " + tblName0);
     assertEquals(2, rs.size());
-
-    /*String tblNameTrunc = createTableName("TEST_VALUE");
-
-    IgniteCache<BinaryObject, BinaryObject> cacheTrunc = configureCache(tblNameTrunc, Collections.singletonList("id"));
-
-    affKeyField = getTableAffinityKeyField(tblNameTrunc);
-    assertNull(affKeyField);
-
-    try (IgniteDataStreamer<BinaryObject, BinaryObject> streamer = createDataStreamer(node(), cacheTrunc.getName())) {
-      BinaryObject key = buildKeyStrictly();
-      BinaryObject val = buildVal();
-
-      streamer.addData(key, val);
-      streamer.flush();
-    }
-
-    executeSql(
-            "insert into " + tblNameTrunc + " (ID, NAME, COMPANY, CITY, AGE) values(?, ?, ?, ?, ?)",
-            2L, "TestName2", "TestCompany2", "Moscow", 25
-    );
-
-    rs = executeSql("select * from " + tblNameTrunc);
-    assertEquals(2, rs.size());*/
   }
 
   @Test
   public void testPutWithComplexKeySimple() {
-    String tblName0 = createTableName("TEST_VALUE");
+    String tblName0 = createTableName(TBL_NAME);
+    String keyType = createTypeName(KEY_TYPE);
+    String valType = createTypeName(VAL_TYPE);
 
-    IgniteCache<BinaryObject, BinaryObject> cache0 = configureCache(tblName0, Arrays.asList("id", "city"));
+    IgniteCache<BinaryObject, BinaryObject> cache0 = configureCache(tblName0, keyType, valType, Arrays.asList("ID", "CITY"), true);
 
     String affKeyField = getTableAffinityKeyField(tblName0);
     assertEquals("CITY", affKeyField);
 
-    BinaryObject key = buildKeySimple();
-    BinaryObject val = buildVal();
+    BinaryObject key = buildKeySimple(keyType);
+    BinaryObject val = buildVal(valType);
 
     cache0.put(key, val);
 
@@ -209,70 +211,26 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
     );
 
     List<List<?>> rs = executeSql("select * from " + tblName0);
-    assertEquals(2, rs.size());
-
-    /*String tblNameTrunc = createTableName("TEST_VALUE");
-
-    IgniteCache<BinaryObject, BinaryObject> cacheTrunc = configureCache(tblNameTrunc, Collections.singletonList("id"));
-
-    affKeyField = getTableAffinityKeyField(tblNameTrunc);
-    assertNull(affKeyField);
-
-    BinaryObject keyTrunc = buildKeySimple();
-    BinaryObject val1 = buildVal();
-
-    cacheTrunc.put(keyTrunc, val1);
-
-    executeSql(
-            "insert into " + tblNameTrunc + " (ID, NAME, COMPANY, CITY, AGE) values(?, ?, ?, ?, ?)",
-            2L, "TestName2", "TestCompany2", "Moscow", 25
-    );
-
-    rs = executeSql("select * from " + tblNameTrunc);
-    assertEquals(2, rs.size());*/
-  }
-
-  /*@Test
-  public void testStreamWithComplexKeyIgnoreCase() {
-    String tblName = createTableName("TEST_VALUE");
-
-    IgniteCache<BinaryObject, BinaryObject> cache = configureCache(tblName);
-
-    try (IgniteDataStreamer<BinaryObject, BinaryObject> streamer = createDataStreamer(node(), cache.getName())) {
-      BinaryObject key = buildKeyIgnoreCase();
-      BinaryObject val = buildVal();
-
-      streamer.addData(key, val);
-      streamer.flush();
-    }
-
-    executeSql(
-            "insert into " + tblName + " (ID, NAME, COMPANY, CITY, AGE) values(?, ?, ?, ?, ?)",
-            2L, "TestName2", "TestCompany2", "Moscow", 25
-    );
-
-    List<List<?>> rs = executeSql("select * from " + tblName);
     assertEquals(2, rs.size());
   }
 
   @Test
   public void testInsertWithClassDefined() {
-    String tblName = createTableName("TEST_VALUE");
+    String tblName = createTableName(TBL_NAME);
 
     CacheConfiguration ccfg = new CacheConfiguration(DEFAULT_CACHE_NAME);
 
     ccfg.setSqlSchema("PUBLIC");
     ccfg.setName(tblName);
 
-    Set<String> keys = U.newLinkedHashSet(2);
-    keys.add("id");
-    keys.add("city");
+    Set<String> keys = new LinkedHashSet<>(Arrays.asList("ID", "CITY"));
 
     QueryEntity qryEntity = new QueryEntity(TestKey.class.getName(), TestValue.class.getName());
     fillTestEntityFields(qryEntity.setTableName(tblName).setKeyFields(keys));
 
     ccfg.setQueryEntities(F.asList(qryEntity));
-    ccfg.setKeyConfiguration(new CacheKeyConfiguration(TestKey.class.getName(), "city"));
+    ccfg.setKeyConfiguration(new CacheKeyConfiguration(TestKey.class.getName(), "CITY"));
+    ccfg.setCreateMetaOnStart(true);
 
     node().createCache(ccfg);
 
@@ -283,92 +241,87 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
 
     List<List<?>> rs = executeSql("select * from " + tblName);
     assertEquals(1, rs.size());
-  }*/
+  }
 
   @Test
   public void testBinaryFieldsUpdate() {
-    String tblName = createTableName("TEST_VALUE");
-    IgniteCache<BinaryObject, BinaryObject> cache = configureCache(tblName, Arrays.asList("id", "city"));
+    String tblName = createTableName(TBL_NAME);
+    String keyType = createTypeName(KEY_TYPE);
+    String valType = createTypeName(VAL_TYPE);
 
-    BinaryObject key1 = buildKeyStrictly(1L);
-    BinaryObject val1 = node().binary().builder(VAL_TYPE)
-            .setField("ID", 1L,  Long.class)
-            .setField("CITY", "Moscow", String.class)
-            .setField("NAME", 35, Integer.class)
-            .build();
+    IgniteCache<BinaryObject, BinaryObject> cache = configureCache(tblName, keyType, valType, Arrays.asList("ID", "CITY"), true);
 
-    cache.put(key1, val1); // TODO: ошибка должна быть тут
+    assertThrowsWithCause(() -> {
+      BinaryObject key1 = buildKeyStrictly(keyType, 1L);
+      BinaryObject val1 = node().binary().builder(valType)
+              .setField("ID", 1L,  Long.class)
+              .setField("CITY", "Moscow", String.class)
+              .setField("NAME", 35, Integer.class)
+              .build();
 
-    BinaryObject key2 = buildKeyStrictly(2L);
-    BinaryObject val2 = node().binary().builder(VAL_TYPE)
-            .setField("ID", 2L,  Long.class)
-            .setField("CITY", "Moscow", String.class)
-            .setField("NAME", "TestName1", String.class)
-            .build();
-
-    cache.put(key2, val2);
-
-    List<List<?>> rs = executeSql("select * from " + tblName);
-    assertEquals(2, rs.size());
+      cache.put(key1, val1);
+    }, BinaryObjectException.class);
   }
 
   @Test
   public void testDmlBinaryFieldsUpdate() {
-    String tblName = createTableName("TEST_VALUE");
-    IgniteCache<BinaryObject, BinaryObject> cache = configureCache(tblName, Arrays.asList("id", "city"));
+    String tblName = createTableName(TBL_NAME);
+    String keyType = createTypeName(KEY_TYPE);
+    String valType = createTypeName(VAL_TYPE);
 
-    BinaryObject key1 = buildKeyStrictly(1L);
-    BinaryObject val1 = node().binary().builder(VAL_TYPE)
-            .setField("id", 1L,  Long.class)
-            .setField("city", "Moscow", String.class)
-            .setField("name", 35, Integer.class)
-            .build();
+    IgniteCache<BinaryObject, BinaryObject> cache = configureCache(tblName, keyType, valType, Arrays.asList("ID", "CITY"), false);
 
-    cache.put(key1, val1); // TODO: ошибка должна быть тут
-
-    executeSql("insert into " + tblName + " (ID, CITY, NAME) values(?, ?, ?)", 2L, "Moscow", "NameTest2");
-
-    List<List<?>> rs = executeSql("select * from " + tblName);
-    assertEquals(2, rs.size());
-  }
-
-  @Test
-  public void testDdlBinaryFieldsUpdate() {
-    String tblName = createTableName("TEST_VALUE");
-
-    CacheConfiguration<BinaryObject, BinaryObject> ccfg = new CacheConfiguration<>(DEFAULT_TMPL_NAME);
-    ccfg.setSqlSchema("PUBLIC");
-    ccfg.setAffinity(new RendezvousAffinityFunction(false,1024));
-
-    node().addCacheConfiguration(ccfg);
-
-    createTable(tblName, DEFAULT_TMPL_NAME);
-
-    IgniteCache<BinaryObject, BinaryObject> cache = node().cache(tblName);
-
-    BinaryObject key1 = buildKeyStrictly(1L);
-    BinaryObject val1 = node().binary().builder(VAL_TYPE)
-            .setField("ID", 1L,  Long.class)
+    BinaryObject key1 = buildKeyStrictly(keyType, 1L);
+    BinaryObject val1 = node().binary().builder(valType)
+            .setField("ID", 1L, Long.class)
             .setField("CITY", "Moscow", String.class)
             .setField("NAME", 35, Integer.class)
             .build();
 
-    cache.put(key1, val1); // TODO: ошибка должна быть тут
+    cache.put(key1, val1);
 
-    BinaryObject key2 = buildKeyStrictly(2L);
-    BinaryObject val2 = node().binary().builder(VAL_TYPE)
-            .setField("ID", 2L,  Long.class)
-            .setField("CITY", "Moscow", String.class)
-            .setField("NAME", "TestName1", String.class)
-            .build();
+    assertThrowsWithCause(() ->
+            executeSql("insert into " + tblName + " (ID, CITY, NAME) values(?, ?, ?)", 2L, "Moscow", "NameTest2"),
+            BinaryObjectException.class
+    );
 
-    cache.put(key2, val2);
+    List<List<?>> rs = executeSql("select * from " + tblName);
+    assertEquals(1, rs.size());
+  }
+
+  @Test
+  public void testDdlBinaryFieldsUpdate() {
+    String tblName = createTableName(TBL_NAME);
+    String keyType = createTypeName(KEY_TYPE);
+    String valType = createTypeName(VAL_TYPE);
+
+    CacheConfiguration<BinaryObject, BinaryObject> ccfg = new CacheConfiguration<>(DEFAULT_TMPL_NAME);
+    ccfg.setSqlSchema("PUBLIC");
+    ccfg.setAffinity(new RendezvousAffinityFunction(false,1024));
+    ccfg.setCreateMetaOnStart(true);
+
+    node().addCacheConfiguration(ccfg);
+
+    createTable(tblName, DEFAULT_TMPL_NAME, keyType, valType);
+
+    IgniteCache<BinaryObject, BinaryObject> cache = node().cache(tblName);
+
+    assertThrowsWithCause(() -> {
+      BinaryObject key1 = buildKeyStrictly(keyType, 1L);
+      BinaryObject val1 = node().binary().builder(valType)
+              .setField("ID", 1L, Long.class)
+              .setField("CITY", "Moscow", String.class)
+              .setField("NAME", 35, Integer.class)
+              .build();
+
+      cache.put(key1, val1);
+    }, BinaryObjectException.class);
   }
 
   /**
    * Creates table based on a template.
    */
-  private void createTable(String tableName, String template) {
+  private void createTable(String tableName, String template, String keyType, String valType) {
     IgniteCache<?,?> cache = node().getOrCreateCache("test");
 
     String sql = String.format(
@@ -380,15 +333,15 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
                     "  AGE     INT,\n" +
                     "  PRIMARY KEY (ID, CITY)\n" +
                     ") with \"TEMPLATE=%2$s,AFFINITY_KEY=CITY,ATOMICITY=TRANSACTIONAL,CACHE_NAME=%1$s,KEY_TYPE=%3$s,VALUE_TYPE=%4$s\";",
-            tableName, template, KEY_TYPE, VAL_TYPE);
+            tableName, template, keyType, valType);
 
     cache.query(new SqlFieldsQuery(sql).setSchema("PUBLIC"));
   }
 
-  private BinaryObject buildKeyStrictly(Long id) {
-    BinaryObjectBuilder builder = node().binary().builder(KEY_TYPE);
-    builder.affinityFieldName("city");
-    builder.setField("ID", id,  Long.class);
+  private BinaryObject buildKeyStrictly(String keyType, Long id) {
+    BinaryObjectBuilder builder = node().binary().builder(keyType);
+    builder.affinityFieldName("CITY");
+    builder.setField("ID", id, Long.class);
     builder.setField("CITY", "Moscow", String.class);
     return builder.build();
   }
@@ -401,15 +354,15 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
     return builder.build();
   }
 
-  private BinaryObject buildKeySimple() {
-    BinaryObjectBuilder builder = node().binary().builder(KEY_TYPE);
+  private BinaryObject buildKeySimple(String keyType) {
+    BinaryObjectBuilder builder = node().binary().builder(keyType);
     builder.setField("ID", 1L,  Long.class);
     builder.setField("CITY", "Moscow", String.class);
     return builder.build();
   }
 
-  private BinaryObject buildVal() {
-    BinaryObjectBuilder builder = node().binary().builder(VAL_TYPE);
+  private BinaryObject buildVal(String valType) {
+    BinaryObjectBuilder builder = node().binary().builder(valType);
     builder.setField("ID", 1L,  Long.class);
     builder.setField("CITY", "Moscow", String.class);
     builder.setField("NAME", "TestName1", String.class);

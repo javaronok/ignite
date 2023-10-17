@@ -20,10 +20,8 @@ package org.apache.ignite.internal.binary.builder;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import org.apache.ignite.binary.BinaryInvalidTypeException;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.binary.BinaryObjectBuilder;
@@ -425,10 +423,7 @@ public class BinaryObjectBuilderImpl implements BinaryObjectBuilder {
         if (oldFldTypeName == null) {
             // It's a new field, we have to add it to metadata.
             if (fieldsMeta == null) {
-                if (BinaryUtils.FIELDS_SORTED_ORDER)
-                    fieldsMeta = new TreeMap<>();
-                else
-                    fieldsMeta = new LinkedHashMap<>();
+                fieldsMeta = BinaryUtils.createMetaFieldsMap();
             }
 
             fieldsMeta.put(name, new BinaryFieldMetadata(newFldTypeId, fieldId));
@@ -529,12 +524,8 @@ public class BinaryObjectBuilderImpl implements BinaryObjectBuilder {
      * If value of {@link #assignedVals} is null, set it according to {@link BinaryUtils#FIELDS_SORTED_ORDER}.
      */
     private Map<String, Object> assignedValues() {
-        if (assignedVals == null) {
-            if (BinaryUtils.FIELDS_SORTED_ORDER)
-                assignedVals = new TreeMap<>();
-            else
-                assignedVals = new LinkedHashMap<>();
-        }
+        if (assignedVals == null)
+            assignedVals = BinaryUtils.createMetaFieldsMap();
 
         return assignedVals;
     }
