@@ -35,10 +35,10 @@ import static org.apache.ignite.testframework.GridTestUtils.assertThrowsWithCaus
 public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstractTest {
 
   /** Counter to generate unique table names. */
-  private static int tblCnt = 0;
+  private static int tblCnt;
 
   /** Counter to generate unique type names. */
-  private static int typeCnt = 0;
+  private static int typeCnt;
 
   private static final String KEY_TYPE = "TestKey", VAL_TYPE = "TestValue";
 
@@ -132,7 +132,7 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
     return !tableMeta.isEmpty() ? (String) tableMeta.get(0).get(0) : null;
   }
 
-  //@Test
+  @Test
   public void testCreateCacheWithKeyTruncated() {
     String tblName = createTableName(TBL_NAME);
     String keyType = createTypeName(KEY_TYPE);
@@ -244,7 +244,7 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
   }
 
   @Test
-  public void testBinaryFieldsUpdate() {
+  public void testBinaryTypeMismatchFieldsUpdate() {
     String tblName = createTableName(TBL_NAME);
     String keyType = createTypeName(KEY_TYPE);
     String valType = createTypeName(VAL_TYPE);
@@ -264,7 +264,7 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
   }
 
   @Test
-  public void testDmlBinaryFieldsUpdate() {
+  public void testDmlBinaryTypeMismatchFieldsUpdate() {
     String tblName = createTableName(TBL_NAME);
     String keyType = createTypeName(KEY_TYPE);
     String valType = createTypeName(VAL_TYPE);
@@ -290,7 +290,7 @@ public class IgniteCacheInsertSqlQueryAffinityKeyTest extends GridCommonAbstract
   }
 
   @Test
-  public void testDdlBinaryFieldsUpdate() {
+  public void testDdlBinaryTypeMismatchFieldsUpdate() {
     String tblName = createTableName(TBL_NAME);
     String keyType = createTypeName(KEY_TYPE);
     String valType = createTypeName(VAL_TYPE);
