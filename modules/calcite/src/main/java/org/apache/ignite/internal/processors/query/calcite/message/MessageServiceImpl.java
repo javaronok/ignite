@@ -39,7 +39,6 @@ import org.apache.ignite.internal.processors.query.calcite.util.Commons;
 import org.apache.ignite.internal.util.typedef.internal.U;
 import org.apache.ignite.lang.IgniteUuid;
 import org.apache.ignite.marshaller.Marshaller;
-import org.apache.ignite.marshaller.MarshallerUtils;
 import org.apache.ignite.plugin.extensions.communication.Message;
 
 /**
@@ -167,7 +166,7 @@ public class MessageServiceImpl extends AbstractService implements MessageServic
         Marshaller marsh0 = ctx.config().getMarshaller();
 
         if (marsh0 == null) // Stubbed context doesn't have a marshaller
-            marsh0 = MarshallerUtils.jdkMarshaller(ctx.igniteInstanceName());
+            marsh0 = ctx.marshallerContext().jdkMarshaller();
 
         marshaller(marsh0);
 

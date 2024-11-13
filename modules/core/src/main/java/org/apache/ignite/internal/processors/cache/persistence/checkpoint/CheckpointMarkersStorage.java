@@ -107,6 +107,9 @@ public class CheckpointMarkersStorage {
     /** Guards checkpoint snapshot operation, so that it couldn't run in parallel. */
     private final AtomicBoolean checkpointSnapshotInProgress = new AtomicBoolean(false);
 
+    /** */
+    private final JdkMarshaller marsh;
+
     /**
      * @param igniteInstanceName Ignite instance name.
      * @param logger Ignite logger.
@@ -115,6 +118,7 @@ public class CheckpointMarkersStorage {
      * @param absoluteWorkDir Directory path to checkpoint markers folder.
      * @param lock Checkpoint read-write lock.
      * @param checkpointMapSnapshotExecutor Checkpoint map snapshot executor.
+     * @param marsh JDK marshaler.
      * @throws IgniteCheckedException if fail.
      */
     CheckpointMarkersStorage(
@@ -124,7 +128,8 @@ public class CheckpointMarkersStorage {
         FileIOFactory factory,
         String absoluteWorkDir,
         CheckpointReadWriteLock lock,
-        Executor checkpointMapSnapshotExecutor
+        Executor checkpointMapSnapshotExecutor,
+        JdkMarshaller marsh
     ) throws IgniteCheckedException {
         this.log = logger.apply(getClass());
         cpHistory = history;
@@ -142,6 +147,7 @@ public class CheckpointMarkersStorage {
         tmpWriteBuf.order(ByteOrder.nativeOrder());
 
         this.checkpointMapSnapshotExecutor = checkpointMapSnapshotExecutor;
+        this.marsh = marsh;
     }
 
     /**
@@ -199,7 +205,7 @@ public class CheckpointMarkersStorage {
             try {
                 byte[] bytes = Files.readAllBytes(snapshotFile.toPath());
 
-                snap = JdkMarshaller.DEFAULT.unmarshal(bytes, null);
+                snap = marsh.unmarshal(bytes, null);
             }
             catch (IOException e) {
                 log.error("Failed to unmarshal earliest checkpoint map snapshot", e);
@@ -636,7 +642,7 @@ public class CheckpointMarkersStorage {
                     final byte[] bytes;
 
                     try {
-                        bytes = JdkMarshaller.DEFAULT.marshal(snapshot);
+                        bytes = marsh.marshal(snapshot);
                     }
                     catch (IgniteCheckedException e) {
                         log.error("Failed to marshal checkpoint snapshot: " + e.getMessage(), e);

@@ -602,6 +602,8 @@ public class MarshallerContextImpl implements MarshallerContext {
 
         if (CU.isPersistenceEnabled(ctx.config()))
             fileStore.restoreMappings(this);
+
+        MarshallerUtils.setNodeName(jdkMarsh, ctx.igniteInstanceName());
     }
 
     /**

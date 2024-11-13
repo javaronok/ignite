@@ -32,11 +32,11 @@ import org.apache.ignite.IgniteCheckedException;
 import org.apache.ignite.IgniteException;
 import org.apache.ignite.IgniteSystemProperties;
 import org.apache.ignite.internal.ClassSet;
-import org.apache.ignite.lang.IgnitePredicate;
 import org.apache.ignite.lang.IgniteProductVersion;
-import org.apache.ignite.marshaller.jdk.JdkMarshaller;
 import org.apache.ignite.plugin.PluginProvider;
 import org.jetbrains.annotations.Nullable;
+
+import static org.apache.ignite.IgniteSystemProperties.IGNITE_MARSHALLER_BLACKLIST;
 
 /**
  * Utility marshaller methods.
@@ -47,6 +47,12 @@ public class MarshallerUtils {
 
     /** Class names file. */
     public static final String CLS_NAMES_FILE = "META-INF/classnames.properties";
+
+    /** Default black list class names file. */
+    public static final String DEFAULT_BLACKLIST_CLS_NAMES_FILE = "META-INF/classnames-default-blacklist.properties";
+
+    /** Default white list class names file. */
+    public static final String DEFAULT_WHITELIST_CLS_NAMES_FILE = "META-INF/classnames-default-whitelist.properties";
 
     /** Job sender node version. */
     private static final ThreadLocal<IgniteProductVersion> JOB_SND_NODE_VER = new ThreadLocal<>();
@@ -71,13 +77,13 @@ public class MarshallerUtils {
      * @param nodeName Node name.
      * @return JDK marshaller.
      */
-    public static JdkMarshaller jdkMarshaller(@Nullable String nodeName) {
+    /*public static JdkMarshaller jdkMarshaller(@Nullable String nodeName) {
         JdkMarshaller marsh = new JdkMarshaller();
 
         setNodeName(marsh, nodeName);
 
         return marsh;
-    }
+    }*/
 
     /**
      * Private constructor.
@@ -128,23 +134,11 @@ public class MarshallerUtils {
      * @param clsLdr Class loader.
      * @return Class name filter for marshaller.
      */
-    public static IgnitePredicate<String> classNameFilter(ClassLoader clsLdr) throws IgniteCheckedException {
+    public static IgniteMarshallerClassFilter classNameFilter(ClassLoader clsLdr) throws IgniteCheckedException {
         ClassSet whiteList = classWhiteList(clsLdr);
         ClassSet blackList = classBlackList(clsLdr);
 
-        return new IgnitePredicate<String>() {
-            @Override public boolean apply(String s) {
-                // Allows all primitive arrays and checks arrays' type.
-                if ((blackList != null || whiteList != null) && s.charAt(0) == '[') {
-                    if (s.charAt(1) == 'L' && s.length() > 2)
-                        s = s.substring(2, s.length() - 1);
-                    else
-                        return true;
-                }
-
-                return (blackList == null || !blackList.contains(s)) && (whiteList == null || whiteList.contains(s));
-            }
-        };
+        return new IgniteMarshallerClassFilter(whiteList, blackList);
     }
 
     /**
@@ -161,6 +155,7 @@ public class MarshallerUtils {
 
             addClassNames(JDK_CLS_NAMES_FILE, clsSet, clsLdr);
             addClassNames(CLS_NAMES_FILE, clsSet, clsLdr);
+            addClassNames(DEFAULT_WHITELIST_CLS_NAMES_FILE, clsSet, clsLdr);
             addClassNames(fileName, clsSet, clsLdr);
         }
 
@@ -172,12 +167,14 @@ public class MarshallerUtils {
      * @return Black list of classes.
      */
     private static ClassSet classBlackList(ClassLoader clsLdr) throws IgniteCheckedException {
-        ClassSet clsSet = null;
+        ClassSet clsSet = new ClassSet();
 
-        String blackListFileName = IgniteSystemProperties.getString(IgniteSystemProperties.IGNITE_MARSHALLER_BLACKLIST);
+        addClassNames(DEFAULT_BLACKLIST_CLS_NAMES_FILE, clsSet, clsLdr);
+
+        String blackListFileName = IgniteSystemProperties.getString(IGNITE_MARSHALLER_BLACKLIST);
 
         if (blackListFileName != null)
-            addClassNames(blackListFileName, clsSet = new ClassSet(), clsLdr);
+            addClassNames(blackListFileName, clsSet, clsLdr);
 
         return clsSet;
     }
