@@ -268,7 +268,7 @@ class WebSessionV2 implements HttpSession {
 
         final Set<String> names = attributeNames();
 
-        return names.toArray(new String[names.size()]);
+        return names.toArray(U.EMPTY_STRS);
     }
 
     /** {@inheritDoc} */

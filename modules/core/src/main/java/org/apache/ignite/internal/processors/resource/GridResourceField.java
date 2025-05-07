@@ -82,7 +82,7 @@ class GridResourceField {
         if (c.isEmpty())
             return EMPTY_ARRAY;
 
-        return c.toArray(new GridResourceField[c.size()]);
+        return c.toArray(EMPTY_ARRAY);
     }
 
     /** {@inheritDoc} */

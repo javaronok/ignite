@@ -210,7 +210,7 @@ public class PlatformDotNetConfigurationClosure extends PlatformAbstractConfigur
         }
 
         if (!newBeans.isEmpty()) {
-            LifecycleBean[] newBeans0 = newBeans.toArray(new LifecycleBean[newBeans.size()]);
+            LifecycleBean[] newBeans0 = newBeans.toArray(new LifecycleBean[0]);
 
             // New beans were added. Let's append them to the tail of the rest configured lifecycle beans.
             LifecycleBean[] oldBeans = cfg.getLifecycleBeans();

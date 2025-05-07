@@ -115,7 +115,7 @@ public class MetricRegistryMBean extends ReadOnlyDynamicMBean {
         return new MBeanInfo(
             ReadOnlyMetricManager.class.getName(),
             mreg.name(),
-            attributes.toArray(new MBeanAttributeInfo[attributes.size()]),
+            attributes.toArray(new MBeanAttributeInfo[0]),
             null,
             null,
             null);

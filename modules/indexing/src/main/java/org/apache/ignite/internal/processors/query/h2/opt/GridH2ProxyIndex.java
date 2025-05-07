@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import org.apache.ignite.internal.processors.query.GridQueryRowDescriptor;
 import org.apache.ignite.internal.processors.query.QueryUtils;
+import org.apache.ignite.internal.processors.query.h2.H2Utils;
 import org.apache.ignite.internal.processors.query.h2.opt.join.ProxyDistributedLookupBatch;
 import org.h2.engine.Session;
 import org.h2.index.Cursor;
@@ -59,7 +60,7 @@ public class GridH2ProxyIndex extends H2IndexCostedBase {
         super(tbl, name, GridH2IndexBase.columnsArray(tbl, colsList),
             IndexType.createNonUnique(false, false, idx instanceof SpatialIndex));
 
-        IndexColumn[] cols = colsList.toArray(new IndexColumn[colsList.size()]);
+        IndexColumn[] cols = colsList.toArray(H2Utils.EMPTY_COLUMNS);
 
         IndexColumn.mapColumns(cols, tbl);
 

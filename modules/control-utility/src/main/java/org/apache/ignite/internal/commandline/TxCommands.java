@@ -34,6 +34,7 @@ import org.apache.ignite.internal.client.GridClientException;
 import org.apache.ignite.internal.commandline.argument.CommandArgUtils;
 import org.apache.ignite.internal.processors.cache.version.GridCacheVersion;
 import org.apache.ignite.internal.util.typedef.F;
+import org.apache.ignite.internal.util.typedef.internal.U;
 import org.apache.ignite.internal.visor.tx.FetchNearXidVersionTask;
 import org.apache.ignite.internal.visor.tx.TxKeyLockType;
 import org.apache.ignite.internal.visor.tx.TxMappingType;
@@ -95,7 +96,7 @@ public class TxCommands extends AbstractCommand<VisorTxTaskArg> {
         list.add(optional(TX_INFO));
         list.add(optional(CMD_AUTO_CONFIRMATION));
 
-        return list.toArray(new String[list.size()]);
+        return list.toArray(U.EMPTY_STRS);
     }
 
     /** {@inheritDoc} */

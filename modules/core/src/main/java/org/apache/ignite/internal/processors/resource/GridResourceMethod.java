@@ -77,7 +77,7 @@ class GridResourceMethod {
         if (c.isEmpty())
             return EMPTY_ARRAY;
 
-        return c.toArray(new GridResourceMethod[c.size()]);
+        return c.toArray(EMPTY_ARRAY);
     }
 
     /** {@inheritDoc} */

@@ -2010,7 +2010,7 @@ public class IgnitionEx {
                 }
             }
 
-            cfg.setCacheConfiguration(cacheCfgs.toArray(new CacheConfiguration[cacheCfgs.size()]));
+            cfg.setCacheConfiguration(cacheCfgs.toArray(new CacheConfiguration[0]));
 
             assert cfg.getCacheConfiguration() != null;
         }
@@ -2067,7 +2067,7 @@ public class IgnitionEx {
                 if (!dfltLoadBalancingSpi)
                     spis.add(new RoundRobinLoadBalancingSpi());
 
-                cfg.setLoadBalancingSpi(spis.toArray(new LoadBalancingSpi[spis.size()]));
+                cfg.setLoadBalancingSpi(spis.toArray(new LoadBalancingSpi[0]));
             }
 
             if (cfg.getIndexingSpi() == null)
@@ -2682,8 +2682,7 @@ public class IgnitionEx {
         }
 
         if (!optionalDataRegions.isEmpty())
-            dsCfg.setDataRegionConfigurations(optionalDataRegions.toArray(
-                new DataRegionConfiguration[optionalDataRegions.size()]));
+            dsCfg.setDataRegionConfigurations(optionalDataRegions.toArray(new DataRegionConfiguration[0]));
 
         if (!customDfltPlc) {
             if (!DFLT_MEM_PLC_DEFAULT_NAME.equals(memCfg.getDefaultMemoryPolicyName())) {

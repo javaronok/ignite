@@ -307,7 +307,7 @@ public class GridResourceIoc {
             }
 
             recursiveFields = recursiveFieldsList.isEmpty() ? U.EMPTY_FIELDS
-                : recursiveFieldsList.toArray(new Field[recursiveFieldsList.size()]);
+                : recursiveFieldsList.toArray(U.EMPTY_FIELDS);
 
             this.annMap = IgniteUtils.limitedMap(annMap.size());
 

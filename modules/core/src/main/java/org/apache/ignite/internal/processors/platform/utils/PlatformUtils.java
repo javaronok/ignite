@@ -481,7 +481,7 @@ public class PlatformUtils {
                     res0.add(CachePeekMode.fromOrdinal((byte)i));
             }
 
-            res = res0.toArray(new CachePeekMode[res0.size()]);
+            res = res0.toArray(new CachePeekMode[0]);
 
             synchronized (PlatformUtils.class) {
                 CACHE_PEEK_MODES[modes] = res;

@@ -60,7 +60,7 @@ public class GridProjectionForCachesSelfTest extends GridCommonAbstractTest {
             ccfgs.add(cacheConfiguration(CACHE_NAME, new AttributeFilter(getTestIgniteInstanceName(2),
                 getTestIgniteInstanceName(3)), true));
 
-        cfg.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[ccfgs.size()]));
+        cfg.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[0]));
 
         return cfg;
     }

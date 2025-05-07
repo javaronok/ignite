@@ -826,7 +826,7 @@ public final class X {
     public static Throwable[] getThrowables(Throwable throwable) {
         List<Throwable> list = getThrowableList(throwable);
 
-        return list.toArray(new Throwable[list.size()]);
+        return list.toArray(new Throwable[0]);
     }
 
     /**

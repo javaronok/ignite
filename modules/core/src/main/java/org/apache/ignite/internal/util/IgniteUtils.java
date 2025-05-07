@@ -635,7 +635,7 @@ public abstract class IgniteUtils {
     private static final boolean assertionsEnabled;
 
     /** Empty URL array. */
-    private static final URL[] EMPTY_URL_ARR = new URL[0];
+    public static final URL[] EMPTY_URL_ARR = new URL[0];
 
     /** Builtin class loader class.
      *

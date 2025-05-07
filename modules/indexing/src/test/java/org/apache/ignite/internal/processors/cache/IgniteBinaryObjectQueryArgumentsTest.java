@@ -130,7 +130,7 @@ public class IgniteBinaryObjectQueryArgumentsTest extends GridCommonAbstractTest
         ccfgs.addAll(getCacheConfigurations(BIG_DECIMAL_CACHE, BigDecimal.class, Person.class));
         ccfgs.add(getCacheConfiguration(FIELD_CACHE, Integer.class, SearchValue.class));
 
-        return ccfgs.toArray(new CacheConfiguration[ccfgs.size()]);
+        return ccfgs.toArray(new CacheConfiguration[0]);
     }
 
     /**

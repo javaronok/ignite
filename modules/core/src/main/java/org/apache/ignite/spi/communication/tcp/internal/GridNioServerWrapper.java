@@ -911,7 +911,7 @@ public class GridNioServerWrapper {
                     .directMode(true)
                     .writeTimeout(cfg.socketWriteTimeout())
                     .selectorSpins(cfg.selectorSpins())
-                    .filters(filters.toArray(new GridNioFilter[filters.size()]))
+                    .filters(filters.toArray(new GridNioFilter[0]))
                     .writerFactory(writerFactory)
                     .skipRecoveryPredicate(skipRecoveryPred)
                     .messageQueueSizeListener(queueSizeMonitor)

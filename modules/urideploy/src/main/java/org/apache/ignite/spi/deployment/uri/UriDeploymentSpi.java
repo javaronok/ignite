@@ -1124,7 +1124,7 @@ public class UriDeploymentSpi extends IgniteSpiAdapter implements DeploymentSpi 
 
         if (clss != null && !clss.isEmpty()) {
             try {
-                addResources(newDesc.getClassLoader(), newDesc, clss.toArray(new Class<?>[clss.size()]));
+                addResources(newDesc.getClassLoader(), newDesc, clss.toArray(new Class<?>[0]));
             }
             catch (IgniteSpiException e) {
                 U.warn(log, "Failed to register a class loader for a package [newDesc=" + newDesc +

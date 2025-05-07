@@ -254,7 +254,7 @@ public class GridNioRecoveryDescriptor {
                 return false;
 
             if (!msgReqs.isEmpty()) {
-                reqs = msgReqs.toArray(new SessionWriteRequest[msgReqs.size()]);
+                reqs = msgReqs.toArray(new SessionWriteRequest[0]);
 
                 msgReqs.clear();
             }
@@ -401,7 +401,7 @@ public class GridNioRecoveryDescriptor {
             }
 
             if (nodeLeft && !msgReqs.isEmpty()) {
-                futs = msgReqs.toArray(new SessionWriteRequest[msgReqs.size()]);
+                futs = msgReqs.toArray(new SessionWriteRequest[0]);
 
                 msgReqs.clear();
             }

@@ -153,7 +153,7 @@ public abstract class StatisticsAbstractTest extends GridCommonAbstractTest {
 
         Collections.reverse(dirOrdTbls);
 
-        String reversedOrder = replaceTablePlaceholders(sql, dirOrdTbls.toArray(new String[dirOrdTbls.size()]));
+        String reversedOrder = replaceTablePlaceholders(sql, dirOrdTbls.toArray(U.EMPTY_STRS));
 
         if (log.isDebugEnabled())
             log.debug("Reversed join order=" + reversedOrder);
@@ -200,7 +200,7 @@ public abstract class StatisticsAbstractTest extends GridCommonAbstractTest {
         while (m.find())
             result.add(m.group(1).trim());
 
-        return result.toArray(new String[result.size()]);
+        return result.toArray(U.EMPTY_STRS);
     }
 
     /**

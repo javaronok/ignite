@@ -95,7 +95,7 @@ public class IgniteCachePartitionMapUpdateTest extends GridCommonAbstractTest {
 
         cfg.setUserAttributes(attrs);
 
-        cfg.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[ccfgs.size()]));
+        cfg.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[0]));
 
         return cfg;
     }

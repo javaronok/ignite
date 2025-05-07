@@ -94,7 +94,7 @@ public class IgniteSqlKeyValueFieldsTest extends AbstractIndexingCommonTest {
         ccfgs.add(buildCacheConfiguration(CACHE_JOB));
         ccfgs.add(buildCacheConfiguration(CACHE_SQL));
 
-        c.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[ccfgs.size()]));
+        c.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[0]));
 
         return c;
     }

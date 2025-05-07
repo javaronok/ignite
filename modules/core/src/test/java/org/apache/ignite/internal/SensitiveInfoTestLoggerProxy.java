@@ -212,7 +212,7 @@ public class SensitiveInfoTestLoggerProxy implements IgniteLogger, LifecycleAwar
             ex.printStackTrace();
         }
 
-        return lst.toArray(new Pattern[lst.size()]);
+        return lst.toArray(new Pattern[0]);
     }
 
     /**

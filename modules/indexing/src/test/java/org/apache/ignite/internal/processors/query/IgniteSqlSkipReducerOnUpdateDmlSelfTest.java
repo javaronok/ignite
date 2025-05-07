@@ -95,7 +95,7 @@ public class IgniteSqlSkipReducerOnUpdateDmlSelfTest extends AbstractIndexingCom
         ccfgs.add(buildCacheConfiguration(CACHE_PERSON));
         ccfgs.add(buildCacheConfiguration(CACHE_POSITION));
 
-        c.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[ccfgs.size()]));
+        c.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[0]));
         c.setSqlConfiguration(new SqlConfiguration().setLongQueryWarningTimeout(10000));
         c.setIncludeEventTypes(EventType.EVTS_ALL);
 

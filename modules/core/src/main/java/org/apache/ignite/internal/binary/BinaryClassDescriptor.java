@@ -377,7 +377,7 @@ public class BinaryClassDescriptor {
                         }
                     }
 
-                    fields = fields0.values().toArray(new BinaryFieldAccessor[fields0.size()]);
+                    fields = fields0.values().toArray(new BinaryFieldAccessor[0]);
 
                     BinarySchema.Builder schemaBuilder = BinarySchema.Builder.newBuilder();
 

@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.cache.query.SqlFieldsQuery;
+import org.apache.ignite.internal.util.typedef.internal.U;
 import org.apache.ignite.testframework.junits.common.GridCommonAbstractTest;
 
 /**
@@ -61,7 +62,7 @@ public abstract class TableStatisticsAbstractTest extends GridCommonAbstractTest
 
         Collections.reverse(dirOrdTbls);
 
-        String reversedOrder = replaceTablePlaceholders(sql, dirOrdTbls.toArray(new String[dirOrdTbls.size()]));
+        String reversedOrder = replaceTablePlaceholders(sql, dirOrdTbls.toArray(U.EMPTY_STRS));
 
         if (log.isDebugEnabled())
             log.debug("Reversed join order=" + reversedOrder);

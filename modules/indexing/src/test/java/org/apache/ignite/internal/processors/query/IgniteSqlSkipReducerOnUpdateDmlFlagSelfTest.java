@@ -75,7 +75,7 @@ public class IgniteSqlSkipReducerOnUpdateDmlFlagSelfTest extends AbstractIndexin
         ccfgs.add(buildCacheConfiguration(CACHE_REPORT));
         ccfgs.add(buildCacheConfiguration(CACHE_LIST));
 
-        c.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[ccfgs.size()]));
+        c.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[0]));
 
         return c;
     }

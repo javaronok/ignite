@@ -391,7 +391,7 @@ final class GridUriDeploymentJarVerifier {
                 certChains.addAll(signer.getSignerCertPath().getCertificates());
 
             // Convert into a Certificate[]
-            return certChains.toArray(new Certificate[certChains.size()]);
+            return certChains.toArray(new Certificate[0]);
         }
 
         return certs;

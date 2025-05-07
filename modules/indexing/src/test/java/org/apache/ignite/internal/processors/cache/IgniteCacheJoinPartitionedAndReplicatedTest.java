@@ -108,7 +108,7 @@ public class IgniteCacheJoinPartitionedAndReplicatedTest extends GridCommonAbstr
             ccfgs.add(ccfg);
         }
 
-        cfg.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[ccfgs.size()]));
+        cfg.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[0]));
 
         return cfg;
     }

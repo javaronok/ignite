@@ -1002,7 +1002,7 @@ public abstract class DynamicColumnsAbstractConcurrentSelfTest extends DynamicCo
 
         String idxQry = "CREATE INDEX idx ON " + TBL_NAME + '(';
 
-        Integer[] sorted = fields.toArray(new Integer[fields.size()]);
+        Integer[] sorted = fields.toArray(new Integer[0]);
 
         Arrays.sort(sorted);
 

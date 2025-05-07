@@ -229,7 +229,7 @@ public class JdbcThinStatement implements Statement {
         }
 
         JdbcQueryExecuteRequest req = new JdbcQueryExecuteRequest(stmtType, schema, pageSize,
-            maxRows, conn.getAutoCommit(), explicitTimeout, sql, args == null ? null : args.toArray(new Object[args.size()]));
+            maxRows, conn.getAutoCommit(), explicitTimeout, sql, args == null ? null : args.toArray(new Object[0]));
 
         JdbcResultWithIo resWithIo = conn.sendRequest(req, this, null);
 

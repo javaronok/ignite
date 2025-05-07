@@ -107,7 +107,7 @@ public class GridServiceProcessorMultiNodeConfigSelfTest extends GridServiceProc
 
         cfgs.add(cfg);
 
-        return cfgs.toArray(new ServiceConfiguration[cfgs.size()]);
+        return cfgs.toArray(new ServiceConfiguration[0]);
     }
 
     /** {@inheritDoc} */

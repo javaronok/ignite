@@ -118,7 +118,7 @@ public class IgniteSqlNotNullConstraintTest extends AbstractIndexingCommonTest {
         if (gridName.equals(INTERCEPTOR_CFG_NODE_NAME))
             ccfgs.add(buildCacheConfigurationRestricted("BadCfgTestCacheINT", false, true, true));
 
-        c.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[ccfgs.size()]));
+        c.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[0]));
 
         if (gridName.equals(NODE_CLIENT)) {
             // Not allowed to have local cache on client without memory config

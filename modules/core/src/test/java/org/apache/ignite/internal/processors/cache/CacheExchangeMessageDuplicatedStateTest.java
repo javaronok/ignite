@@ -122,7 +122,7 @@ public class CacheExchangeMessageDuplicatedStateTest extends GridCommonAbstractT
             ccfgs.add(ccfg);
         }
 
-        cfg.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[ccfgs.size()]));
+        cfg.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[0]));
 
         return cfg;
     }

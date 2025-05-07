@@ -68,7 +68,7 @@ public class IgniteSequenceInternalCleanupTest extends GridCommonAbstractTest {
                 setAffinity(new RendezvousAffinityFunction(false, 16)));
         }
 
-        cfg.setCacheConfiguration(cacheCfg.toArray(new CacheConfiguration[cacheCfg.size()]));
+        cfg.setCacheConfiguration(cacheCfg.toArray(new CacheConfiguration[0]));
 
         return cfg;
     }

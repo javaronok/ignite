@@ -23,6 +23,7 @@ import javax.cache.configuration.Factory;
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.internal.util.TransientSerializable;
 import org.apache.ignite.internal.util.typedef.internal.S;
+import org.apache.ignite.internal.util.typedef.internal.U;
 import org.apache.ignite.lang.IgniteExperimental;
 import org.apache.ignite.lang.IgniteProductVersion;
 import org.apache.ignite.transactions.Transaction;
@@ -477,6 +478,6 @@ public class TransactionConfiguration implements Serializable {
         if (DEADLOCK_TIMEOUT_SINCE.compareToIgnoreTimestamp(ver) >= 0)
             transients.add("deadlockTimeout");
 
-        return transients.isEmpty() ? null : transients.toArray(new String[transients.size()]);
+        return transients.isEmpty() ? null : transients.toArray(U.EMPTY_STRS);
     }
 }

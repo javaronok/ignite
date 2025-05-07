@@ -571,7 +571,7 @@ public class GridCacheTransformEventSelfTest extends GridCommonAbstractTest {
             }
         }
 
-        return res.toArray(new UUID[res.size()]);
+        return res.toArray(new UUID[0]);
     }
 
     /**

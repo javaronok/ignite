@@ -73,7 +73,7 @@ class H2IndexFactory {
                     : org.h2.result.SortOrder.DESCENDING));
         }
 
-        IndexColumn[] idxColsArr = idxCols.toArray(new IndexColumn[idxCols.size()]);
+        IndexColumn[] idxColsArr = idxCols.toArray(H2Utils.EMPTY_COLUMNS);
 
         if (idxDesc.type() == QueryIndexType.SORTED) {
             if (idxDesc.isProxy()) {

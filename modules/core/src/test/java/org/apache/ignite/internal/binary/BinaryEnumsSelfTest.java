@@ -549,7 +549,7 @@ public class BinaryEnumsSelfTest extends AbstractBinaryArraysTest {
                         EnumType.TWO.name(), EnumType.TWO.ordinal()));
 
         Collection<BinaryObject> vals = node1.binary().type(enumName).enumValues();
-        BinaryObject[] values = vals.toArray(new BinaryObject[vals.size()]);
+        BinaryObject[] values = vals.toArray(new BinaryObject[0]);
 
         assertEquals(2, values.length);
 

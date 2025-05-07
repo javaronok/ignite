@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.ignite.IgniteLogger;
+import org.apache.ignite.internal.util.typedef.internal.U;
 import org.apache.ignite.spi.IgniteSpiException;
 
 /**
@@ -79,7 +80,7 @@ class GridUriDeploymentClassLoaderFactory {
                 }
             }
 
-            return new GridUriDeploymentClassLoader(urls.toArray(new URL[urls.size()]), parent);
+            return new GridUriDeploymentClassLoader(urls.toArray(U.EMPTY_URL_ARR), parent);
         }
         catch (MalformedURLException e) {
             throw new IgniteSpiException("Failed to create class loader for a package: " + file, e);

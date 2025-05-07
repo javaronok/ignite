@@ -149,9 +149,9 @@ public class ClientAffinityAssignmentWithBaselineTest extends GridCommonAbstract
         clientConfigs.add(cacheConfig(PARTITIONED_TX_CLIENT_CACHE_NAME));
 
         if (igniteInstanceName.startsWith(CLIENT_GRID_NAME))
-            cfg.setCacheConfiguration(clientConfigs.toArray(new CacheConfiguration[clientConfigs.size()]));
+            cfg.setCacheConfiguration(clientConfigs.toArray(new CacheConfiguration[0]));
         else
-            cfg.setCacheConfiguration(srvConfigs.toArray(new CacheConfiguration[srvConfigs.size()]));
+            cfg.setCacheConfiguration(srvConfigs.toArray(new CacheConfiguration[0]));
 
         // Enforce different mac adresses to emulate distributed environment by default.
         cfg.setUserAttributes(Collections.singletonMap(

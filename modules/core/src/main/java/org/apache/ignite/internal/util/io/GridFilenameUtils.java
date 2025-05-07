@@ -17,6 +17,8 @@
 
 package org.apache.ignite.internal.util.io;
 
+import org.apache.ignite.internal.util.typedef.internal.U;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -1337,7 +1339,7 @@ public class GridFilenameUtils {
         if (buffer.length() != 0)
             list.add(buffer.toString());
 
-        return list.toArray( new String[ list.size() ] );
+        return list.toArray(U.EMPTY_STRS);
     }
 
     /**

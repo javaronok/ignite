@@ -178,7 +178,7 @@ public class GmmTrainer extends SingleLabelDatasetTrainer<GmmModel> {
     public GmmTrainer withInitialMeans(List<Vector> means) {
         A.notEmpty(means, "GMM should start with non empty initial components list");
 
-        this.initialMeans = means.toArray(new Vector[means.size()]);
+        this.initialMeans = means.toArray(new Vector[0]);
         this.countOfComponents = means.size();
         if (countOfComponents > maxCountOfClusters)
             maxCountOfClusters = countOfComponents;

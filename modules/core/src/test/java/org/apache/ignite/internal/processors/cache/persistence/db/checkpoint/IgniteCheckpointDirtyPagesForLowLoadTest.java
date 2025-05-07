@@ -69,7 +69,7 @@ public class IgniteCheckpointDirtyPagesForLowLoadTest extends GridCommonAbstract
                 ccfgs.add(ccfg);
             }
         }
-        cfg.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[ccfgs.size()]));
+        cfg.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[0]));
 
         DataStorageConfiguration dsCfg = new DataStorageConfiguration();
         dsCfg.setDefaultDataRegionConfiguration(

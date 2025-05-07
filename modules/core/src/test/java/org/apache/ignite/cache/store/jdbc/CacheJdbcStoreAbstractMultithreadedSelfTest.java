@@ -101,7 +101,7 @@ public abstract class CacheJdbcStoreAbstractMultithreadedSelfTest<T extends Cach
 
             Collection<JdbcType> types = new ArrayList<>(springCtx.getBeansOfType(JdbcType.class).values());
 
-            store.setTypes(types.toArray(new JdbcType[types.size()]));
+            store.setTypes(types.toArray(new JdbcType[0]));
         }
         catch (BeansException e) {
             if (X.hasCause(e, ClassNotFoundException.class))

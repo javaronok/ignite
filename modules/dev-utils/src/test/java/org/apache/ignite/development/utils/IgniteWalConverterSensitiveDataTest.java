@@ -46,6 +46,7 @@ import org.apache.ignite.internal.processors.cache.GridCacheOperation;
 import org.apache.ignite.internal.processors.cache.KeyCacheObjectImpl;
 import org.apache.ignite.internal.processors.cache.version.GridCacheVersion;
 import org.apache.ignite.internal.util.typedef.internal.CU;
+import org.apache.ignite.internal.util.typedef.internal.U;
 import org.apache.ignite.testframework.junits.common.GridCommonAbstractTest;
 import org.apache.ignite.transactions.Transaction;
 import org.junit.Test;
@@ -249,7 +250,7 @@ public class IgniteWalConverterSensitiveDataTest extends GridCommonAbstractTest 
         if (processSensitiveData != null)
             args.add("processSensitiveData=" + processSensitiveData.name());
 
-        IgniteWalConverter.main(args.toArray(new String[args.size()]));
+        IgniteWalConverter.main(args.toArray(U.EMPTY_STRS));
 
         String testOutStr = testOut.toString();
 

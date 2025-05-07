@@ -87,7 +87,7 @@ public class IgniteSqlRoutingTest extends AbstractIndexingCommonTest {
         ccfgs.add(buildCacheConfiguration(CACHE_PERSON));
         ccfgs.add(buildCacheConfiguration(CACHE_CALL));
 
-        c.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[ccfgs.size()]));
+        c.setCacheConfiguration(ccfgs.toArray(new CacheConfiguration[0]));
         c.setCacheKeyConfiguration(new CacheKeyConfiguration(CallKey.class));
         c.setIncludeEventTypes(EventType.EVTS_ALL);
 

@@ -55,6 +55,6 @@ public class PlatformTestPluginConfigurationClosureFactory implements PlatformPl
 
         cfgs.add(plugCfg);
 
-        cfg.setPluginConfigurations(cfgs.toArray(new PluginConfiguration[cfgs.size()]));
+        cfg.setPluginConfigurations(cfgs.toArray(new PluginConfiguration[0]));
     }
 }

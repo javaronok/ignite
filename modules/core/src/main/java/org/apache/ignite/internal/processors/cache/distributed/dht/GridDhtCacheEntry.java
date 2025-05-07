@@ -759,7 +759,7 @@ public class GridDhtCacheEntry extends GridDistributedCacheEntry {
         }
 
         if (newRdrs != null) {
-            rdrs = newRdrs.toArray(new ReaderId[newRdrs.size()]);
+            rdrs = newRdrs.toArray(ReaderId.EMPTY_ARRAY);
 
             this.rdrs = rdrs;
         }

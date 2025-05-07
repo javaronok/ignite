@@ -21,6 +21,7 @@ import java.util.Collection;
 import org.apache.ignite.internal.util.typedef.C1;
 import org.apache.ignite.internal.util.typedef.F;
 import org.apache.ignite.internal.util.typedef.internal.SB;
+import org.apache.ignite.internal.util.typedef.internal.U;
 
 /**
  * Basic implementation of dialect based on JDBC specification.
@@ -175,7 +176,7 @@ public class BasicJdbcDialect implements JdbcDialect {
 
         SB sb = new SB();
 
-        String[] cols = keyCols.toArray(new String[keyCols.size()]);
+        String[] cols = keyCols.toArray(U.EMPTY_STRS);
 
         if (appendLowerBound) {
             sb.a("(");

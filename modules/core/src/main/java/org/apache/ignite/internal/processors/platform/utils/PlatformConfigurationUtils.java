@@ -289,7 +289,7 @@ public class PlatformConfigurationUtils {
             if (ccfg.getPluginConfigurations() != null)
                 Collections.addAll(plugins, ccfg.getPluginConfigurations());
 
-            ccfg.setPluginConfigurations(plugins.toArray(new CachePluginConfiguration[plugins.size()]));
+            ccfg.setPluginConfigurations(plugins.toArray(new CachePluginConfiguration[0]));
         }
 
         return ccfg;
@@ -979,7 +979,7 @@ public class PlatformConfigurationUtils {
             caches.add(readCacheConfiguration(in));
 
         CacheConfiguration[] oldCaches = cfg.getCacheConfiguration();
-        CacheConfiguration[] caches0 = caches.toArray(new CacheConfiguration[caches.size()]);
+        CacheConfiguration[] caches0 = caches.toArray(new CacheConfiguration[0]);
 
         if (oldCaches == null)
             cfg.setCacheConfiguration(caches0);

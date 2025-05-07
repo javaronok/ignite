@@ -42,6 +42,6 @@ public class PlatformTestCachePluginConfigurationClosure implements PlatformCach
 
         cfgs.add(plugCfg);
 
-        cacheConfiguration.setPluginConfigurations(cfgs.toArray(new CachePluginConfiguration[cfgs.size()]));
+        cacheConfiguration.setPluginConfigurations(cfgs.toArray(new CachePluginConfiguration[0]));
     }
 }
